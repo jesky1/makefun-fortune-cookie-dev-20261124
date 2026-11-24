@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const MIN_LENGTH = 1;
@@ -28,4 +28,13 @@ function validateEntry(entry) {
 const outputDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
 mkdirSync(outputDir, { recursive: true });
 validateEntry(ENTRY);
-writeFileSync(join(outputDir, "entry.txt"), ENTRY, "utf8");
+const outputPath = join(outputDir, "entry.txt");
+writeFileSync(outputPath, ENTRY, "utf8");
+// Read back and confirm the file on disk is byte-identical to the entry:
+// a truncated or newline-appended write must fail loudly instead of
+// silently shipping an invalid entry to the judge.
+const written = readFileSync(outputPath, "utf8");
+if (written !== ENTRY) {
+  rmSync(outputPath, { force: true });
+  throw new Error("entry.txt on disk does not match the validated entry");
+}
