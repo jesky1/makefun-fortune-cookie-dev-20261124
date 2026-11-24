@@ -22,6 +22,9 @@ function validateEntry(entry) {
   if (entry.trim().length === 0) {
     throw new Error("entry must not be only whitespace");
   }
+  if (entry !== entry.trim()) {
+    throw new Error("entry must not have leading or trailing whitespace");
+  }
   return entry;
 }
 
